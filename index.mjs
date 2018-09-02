@@ -177,7 +177,7 @@ class Giiker extends EventEmitter {
   }
 
   /**
-   * Returns a promise that will resolve to the battery level
+   * Returns a promise that will resolve to the current battery level as percentage
    */
   async getBatteryLevel () {
     const readCharacteristic = await this._systemService.getCharacteristic(SYSTEM_READ_UUID);
@@ -195,6 +195,37 @@ class Giiker extends EventEmitter {
       };
       readCharacteristic.addEventListener('characteristicvaluechanged', listener);
     });
+  }
+
+  /**
+   * Returns a promise that will resolve to the total number of moves performed with this cube
+   */
+  async getMoveCount () {
+    const readCharacteristic = await this._systemService.getCharacteristic(SYSTEM_READ_UUID);
+    const writeCharacteristic = await this._systemService.getCharacteristic(SYSTEM_WRITE_UUID);
+    await readCharacteristic.startNotifications();
+    const data = new Uint8Array([0xcc]).buffer;
+    writeCharacteristic.writeValue(data);
+
+    return new Promise((resolve) => {
+      const listener = (event) => {
+        const value = event.target.value;
+        readCharacteristic.removeEventListener('characteristicvaluechanged', listener);
+        readCharacteristic.stopNotifications();
+        resolve(value.getUint8(4) + 256 * value.getUint8(3) + 65536 * value.getUint8(2) + 16777216 * value.getUint8(1));
+      };
+      readCharacteristic.addEventListener('characteristicvaluechanged', listener);
+    });
+  }
+
+  /**
+   * Resets the cube's internal state to solved.
+   */
+  async resetState () {
+    const writeCharacteristic = await this._systemService.getCharacteristic(SYSTEM_WRITE_UUID);
+    const data = new Uint8Array([0xa1]).buffer;
+    this._resetting = true;
+    await writeCharacteristic.writeValue(data);
   }
 
   /**
@@ -319,7 +350,12 @@ class Giiker extends EventEmitter {
     const value = event.target.value;
     const {state, moves} = this._parseCubeValue(value);
     this._state = state;
-    this.emit('move', moves[0]);
+    if (this._resetting && this.stateString === "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB") {
+      this._resetting = false;
+      this.emit('reset-complete');
+    } else {
+      this.emit('move', moves[0]);
+    }
   }
 
   _parseCubeValue (value) {

@@ -1,11 +1,18 @@
 {
   "name": "giiker",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "JavaScript wrapper for GiiKER smart cube Bluetooth API",
   "main": "index.js",
+  "module": "index.mjs",
   "files": [
-    "index.js"
+    "index.js",
+    "index.mjs"
   ],
+  "scripts": {
+    "build": "babel index.mjs -o index.js",
+    "prepublish": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hakatashi/giiker.git"
@@ -16,5 +23,14 @@
   "bugs": {
     "url": "https://github.com/hakatashi/giiker/issues"
   },
-  "homepage": "https://github.com/hakatashi/giiker#readme"
+  "homepage": "https://github.com/hakatashi/giiker#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.55",
+    "@babel/core": "^7.0.0-beta.55",
+    "@babel/plugin-transform-runtime": "^7.0.0-beta.55",
+    "@babel/preset-env": "^7.0.0-beta.55"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.0.0-beta.55"
+  }
 }
