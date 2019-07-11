@@ -5,7 +5,7 @@ JavaScript wrapper for [GiiKER smart cube](http://giiker.cn/) Bluetooth API
 ## Usage
 
 ```js
-import GiiKER from 'giiker';
+import GiiKER from '@scarygami/giiker';
 
 // Note: To use Web Bluetooth API trigger action such as button click is required
 const button = document.querySelector('button#connect');
